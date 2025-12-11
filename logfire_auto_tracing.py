@@ -5,7 +5,6 @@ env.read_env()
 
 
 logfire.configure(
-    token=env("LOGFIRE_SIXSIGMA"),
     code_source=logfire.CodeSource(
         repository="https://github.com/EvgenyMeredelin/six-sigma-webapp",
         revision="main"

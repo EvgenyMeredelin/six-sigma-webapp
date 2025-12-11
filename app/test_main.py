@@ -18,8 +18,8 @@ def assert_ok(test: Callable) -> Callable:
     def wrapper(*args, **kwargs) -> None:
         response, expected_dumps = test(*args, **kwargs)
         assert response.status_code == status.HTTP_200_OK
-        if response.headers.get("Process-List"):
-            actual_dumps = json.loads(response.headers["Process-List"])
+        if process_list := response.headers.get("Process-List"):
+            actual_dumps = json.loads(process_list)
         else:
             actual_dumps = json.loads(response.content)["process_list"]
         assert all(
@@ -250,10 +250,10 @@ def test_fails_thresholds_for_one_million_tests():
 
 
 @assert_ok
-def test_prompt():
+def test_single_with_prompt():
     """Test the `/prompt` endpoint. """
     response = client.get(
-        url="/prompt",
+        url="/obs/prompt",
         params={"prompt": "25 good items and 25 defective"}
     )
     expected_dumps = [

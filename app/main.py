@@ -117,7 +117,6 @@ model = OpenAIChatModel(
     model_name="ai-sage/GigaChat3-10B-A1.8B",
     provider=OpenAIProvider()
 )
-
 agent = Agent(model, output_type=SberProcess)
 
 
@@ -126,10 +125,13 @@ async def redirect_from_root_to_docs():
     return RedirectResponse(url="/docs")
 
 
-@app.get("/prompt")
-async def single_obs_by_prompt(prompt: str):
+@app.get("/{mode}/prompt")
+async def single_with_prompt(
+    mode: Annotated[Mode, Path()],  # type: ignore
+    prompt: str
+):
     result = await agent.run(prompt)
-    return await single("obs", result.output)
+    return await single(mode, result.output)
 
 
 @app.get("/{mode}")
