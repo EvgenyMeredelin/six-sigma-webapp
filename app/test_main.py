@@ -18,7 +18,10 @@ def assert_ok(test: Callable) -> Callable:
     def wrapper(*args, **kwargs) -> None:
         response, expected_dumps = test(*args, **kwargs)
         assert response.status_code == status.HTTP_200_OK
-        actual_dumps = json.loads(response.headers["Process-List"])
+        if response.headers.get("Process-List"):
+            actual_dumps = json.loads(response.headers["Process-List"])
+        else:
+            actual_dumps = json.loads(response.content)["process_list"]
         assert all(
             ComparableDump(**actual) == ComparableDump(**expected)
             for actual, expected in zip(actual_dumps, expected_dumps)
@@ -129,7 +132,7 @@ def test_float_coercible_to_integer():
     """Single process. tests and fails are floats coercible to integer. """
     response = client.get(
         url="/plot",
-        params={"tests": 50, "fails": 25}
+        params={"tests": 50.0, "fails": 25.0}
     )
     expected_dumps = [
         {
@@ -241,6 +244,25 @@ def test_fails_thresholds_for_one_million_tests():
             "defect_rate": 0.004661,
             "sigma": 4.10001384285712,
             "label": "GREEN"
+        }
+    ]
+    return response, expected_dumps
+
+
+@assert_ok
+def test_prompt():
+    """Test the `/prompt` endpoint. """
+    response = client.get(
+        url="/prompt",
+        params={"prompt": "25 good items and 25 defective"}
+    )
+    expected_dumps = [
+        {
+            "tests": 50,
+            "fails": 25,
+            "defect_rate": 0.5,
+            "sigma": 1.5,
+            "label": "RED"
         }
     ]
     return response, expected_dumps

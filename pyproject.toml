@@ -5,12 +5,16 @@ description = "Simple web app to evaluate a process with the \"6 Sigma\" approac
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "boto3>=1.40.50",
+    "aiobotocore>=3.0.0",
     "environs>=14.3.0",
     "fastapi[standard]>=0.115.11",
     "logfire[fastapi]>=3.19.0",
     "matplotlib>=3.10.1",
     "mplcyberpunk>=0.7.6",
+    "pydantic-ai>=1.30.0",
     "pytest-cov>=6.0.0",
     "scipy>=1.15.2",
 ]
+
+[tool.logfire]
+ignore_no_config = true

@@ -9,6 +9,9 @@ from pydantic import (
     BaseModel, Field, computed_field,
     model_validator, NonNegativeInt,  PositiveInt
 )
+from pydantic_ai import Agent
+from pydantic_ai.models.openai import OpenAIChatModel
+from pydantic_ai.providers.openai import OpenAIProvider
 from starlette.responses import RedirectResponse
 
 from . import tools
@@ -101,31 +104,45 @@ mode_handlers = {
 Mode = Literal[tuple(mode_handlers)]
 
 
-def handle_request(
+async def handle_request(
     mode: Mode,  # type: ignore
     process_list: list[SberProcess]
 ):
     handler_class = mode_handlers[mode]
     handler = handler_class(process_list)
-    return handler.handle_request()
+    return await handler.handle_request()
+
+
+model = OpenAIChatModel(
+    model_name="ai-sage/GigaChat3-10B-A1.8B",
+    provider=OpenAIProvider()
+)
+
+agent = Agent(model, output_type=SberProcess)
 
 
 @app.get("/")
-def redirect_from_root_to_docs():
+async def redirect_from_root_to_docs():
     return RedirectResponse(url="/docs")
 
 
+@app.get("/prompt")
+async def single_obs_by_prompt(prompt: str):
+    result = await agent.run(prompt)
+    return await single("obs", result.output)
+
+
 @app.get("/{mode}")
-def single(
+async def single(
     mode: Annotated[Mode, Path()],  # type: ignore
     process: Annotated[SberProcess, Depends()]
 ):
-    return handle_request(mode, [process])
+    return await handle_request(mode, [process])
 
 
 @app.post("/{mode}")
-def bulk(
+async def bulk(
     mode: Annotated[Mode, Path()],  # type: ignore
     process_bulk: list[SberProcess]
 ):
-    return handle_request(mode, process_bulk[:MAX_P])
+    return await handle_request(mode, process_bulk[:MAX_P])

@@ -7,11 +7,9 @@ from dataclasses import dataclass
 from types import NoneType
 from uuid import uuid4
 
-import boto3
 import matplotlib.pyplot as plt
 import mplcyberpunk
 import numpy as np
-from botocore.client import Config
 from environs import env
 from fastapi import Response
 from matplotlib.ticker import FormatStrFormatter
@@ -21,6 +19,7 @@ from .settings import (
     DPI_SINGLE, DPI_BULK, MPL_RUNTIME_CONFIG,
     NAME_DISPLAY_LIMIT, LOC
 )
+from .botocore_client import get_async_client
 
 
 # Normal continuous random variable with loc=LOC and scale=1 (default).
@@ -40,7 +39,7 @@ class Handler(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def handle_request(self):
+    async def handle_request(self):
         raise NotImplementedError
 
 
@@ -49,7 +48,7 @@ class Slacker(Handler):
 
     mode = "data"
 
-    def handle_request(self):
+    async def handle_request(self):
         return self.process_list
 
 
@@ -120,7 +119,7 @@ class Plotter(Handler):
         self.buffer.seek(0)
         plt.close(fig)
 
-    def handle_request(self):
+    async def handle_request(self):
         return Response(
             content=self.buffer.getvalue(),
             headers={
@@ -136,33 +135,23 @@ class Uploader(Plotter):
 
     mode = "obs"
 
-    def handle_request(self):
-        session = boto3.session.Session(
-            aws_access_key_id=env("KEY_ID"),
-            aws_secret_access_key=env("KEY_SECRET"),
-            region_name=env("REGION")
-        )
-        client = session.client(
-            service_name="s3",
-            endpoint_url=env("ENDPOINT"),
-            config=Config(s3={"addressing_style": "virtual"})
-        )
-
+    async def handle_request(self):
         folder = str(uuid4())
         bucket = env("BUCKET")
 
-        client.put_object(
-            Bucket=bucket,
-            Key=f"{folder}/plot.png",
-            Body=self.buffer,
-            ContentType="image/png"
-        )
-        client.put_object(
-            Bucket=bucket,
-            Key=f"{folder}/process_list.json",
-            Body=json.dumps(self.dumps, indent=4).encode("utf-8"),
-            ContentType="application/json"
-        )
+        async for client in get_async_client():
+            await client.put_object(
+                Bucket=bucket,
+                Key=f"{folder}/plot.png",
+                Body=self.buffer,
+                ContentType="image/png"
+            )
+            await client.put_object(
+                Bucket=bucket,
+                Key=f"{folder}/process_list.json",
+                Body=json.dumps(self.dumps, indent=4).encode("utf-8"),
+                ContentType="application/json"
+            )
 
         return {
             "bucket": bucket,
