@@ -11,7 +11,6 @@ logfire.configure(
     )
 )
 logfire.install_auto_tracing(modules=["app"], min_duration=0)
-logfire.instrument_pydantic_ai()
 
 
 if __name__ == "__main__":

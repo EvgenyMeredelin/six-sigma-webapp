@@ -35,6 +35,6 @@ class SigmaSupremum(Enum):
     reaches 4.1 which is the lower bound of the GREEN class.
     """
 
-    RED: float = 2.1
-    YELLOW: float = 4.1
-    GREEN: float = float("inf")
+    RED = 2.1
+    YELLOW = 4.1
+    GREEN = float("inf")

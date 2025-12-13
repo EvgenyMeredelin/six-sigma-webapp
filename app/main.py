@@ -4,6 +4,7 @@ from functools import cached_property
 from typing import Annotated, Literal, Self
 
 import logfire
+from environs import env
 from fastapi import Depends, FastAPI, HTTPException, Path, status
 from pydantic import (
     BaseModel, Field, computed_field,
@@ -83,11 +84,8 @@ app = FastAPI(
     }
 )
 
-logfire.instrument_fastapi(
-    app=app,
-    capture_headers=True,
-    record_send_receive=True
-)
+logfire.instrument_fastapi(app)
+logfire.instrument_pydantic_ai()
 
 predicate = lambda obj: (
     inspect.isclass(obj)
@@ -114,7 +112,7 @@ async def handle_request(
 
 
 model = OpenAIChatModel(
-    model_name="ai-sage/GigaChat3-10B-A1.8B",
+    model_name=env("MODEL_NAME"),
     provider=OpenAIProvider()
 )
 agent = Agent(model, output_type=SberProcess)
