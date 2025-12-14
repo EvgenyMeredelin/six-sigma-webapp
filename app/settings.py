@@ -2,9 +2,6 @@ from enum import Enum
 from typing import Any
 
 
-# mu/loc of the normal continuous random variable
-LOC: int | float = 1.5
-
 # maximum number of characters of the process name
 # to display on a figure
 NAME_DISPLAY_LIMIT: int = 40
@@ -23,6 +20,12 @@ MPL_RUNTIME_CONFIG: dict[str, Any] = {
 # matplotlib figure dpi
 DPI_BULK: int = 400
 DPI_SINGLE: int = 600
+
+# system prompt for the Pydantic AI agent
+SYSTEM_PROMPT: str = (
+    "Pay attention that `tests` is the total number of tests. "
+    "It includes failed tests (`fails`) and passed tests (successes)."
+)
 
 
 class SigmaSupremum(Enum):

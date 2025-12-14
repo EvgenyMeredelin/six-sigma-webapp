@@ -16,7 +16,7 @@ from pydantic_ai.providers.openai import OpenAIProvider
 from starlette.responses import RedirectResponse
 
 from . import tools
-from .settings import SigmaSupremum, MAX_P
+from .settings import SigmaSupremum, MAX_P, SYSTEM_PROMPT
 
 
 class SberProcess(BaseModel):
@@ -39,8 +39,8 @@ class SberProcess(BaseModel):
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail=(
-                    "The number of fails can't be greater than the"
-                    " total number of tests"
+                    "The number of fails can't be greater than the "
+                    "total number of tests"
                 )
             )
         return self
@@ -111,11 +111,14 @@ async def handle_request(
     return await handler.handle_request()
 
 
-model = OpenAIChatModel(
-    model_name=env("MODEL_NAME"),
-    provider=OpenAIProvider()
+agent = Agent(
+    model=OpenAIChatModel(
+        model_name=env("MODEL_NAME"),
+        provider=OpenAIProvider()
+    ),
+    system_prompt=SYSTEM_PROMPT,
+    output_type=SberProcess
 )
-agent = Agent(model, output_type=SberProcess)
 
 
 @app.get("/")

@@ -16,15 +16,15 @@ from matplotlib.ticker import FormatStrFormatter
 from scipy import stats
 
 from .settings import (
-    DPI_SINGLE, DPI_BULK, MPL_RUNTIME_CONFIG,
-    NAME_DISPLAY_LIMIT, LOC
+    DPI_SINGLE, DPI_BULK,
+    MPL_RUNTIME_CONFIG, NAME_DISPLAY_LIMIT
 )
 from .botocore_client import get_async_client
 
 
-# Normal continuous random variable with loc=LOC and scale=1 (default).
+# Normal continuous random variable with loc=1.5 and scale=1 (default).
 # https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.norm.html
-norm = stats.norm(LOC)
+norm = stats.norm(1.5)
 
 
 class Handler(ABC):
@@ -82,7 +82,7 @@ class Plotter(Handler):
         xmin, xmax = -3, 6
         x = np.linspace(xmin, xmax, 100*(xmax - xmin) + 1)
         y = norm.pdf(x)  # probability density function
-        xticks = list(range(xmin, xmax + 1)) + [LOC]
+        xticks = list(range(xmin, xmax + 1)) + [1.5]
 
         for process in self.process_list:
             dump = process.model_dump()
@@ -94,7 +94,7 @@ class Plotter(Handler):
 
             dr_label = f"Defect rate = {defect_rate * 100:.2f}%"
             aes = {"label": dr_label, "color": label.lower(), "alpha": 0.44}
-            norm_label = f"$N(\\mu = {LOC}, \\sigma = 1)$"
+            norm_label = f"$N(\\mu = 1.5, \\sigma = 1)$"
             sigma_annotation = f"$\\sigma$ = {sigma:.3f}"
             name = f", name={name[:NAME_DISPLAY_LIMIT]!r}" if name else ""
             title = f"{process.__class__.__name__}({tests=}, {fails=}{name})"

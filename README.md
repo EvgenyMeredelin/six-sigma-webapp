@@ -4,8 +4,8 @@
 
 * `GET/POST /data` — data-only mode: process(es) enriched with computed fields;
 * `GET/POST /plot` — plot as binary content and data in the "Process-List" header (examples below);
-* `GET/POST /obs` — plot and data uploaded to a bucket
-* `GET {mode}/prompt` — `data`/`plot`/`obs` mode with a prompt for a single process
+* `GET/POST /obs` — plot and data uploaded to a bucket;
+* `GET {mode}/prompt` — `data`/`plot`/`obs` mode with a prompt for a single process.
 
 
 ### `GET /plot`
